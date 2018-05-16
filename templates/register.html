@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Kayıt formu
+{% endblock title %}
+
+{% block content %}
+    <h3>Kayıt formu</h3>
+    <hr>
+    {% from "includes/formhelpers.html" import render_field %}
+    <form method=POST>
+      <dl>
+        {{ render_field(form.name, class="form-control") }}
+        {{ render_field(form.username, class="form-control") }}
+        {{ render_field(form.email, class="form-control") }}
+        {{ render_field(form.password, class="form-control") }}
+        {{ render_field(form.confirm_password, class="form-control") }}
+      </dl>
+      <p><button type="submit" class="btn btn-primary">Register</button>
+    </form>
+{% endblock content %}
