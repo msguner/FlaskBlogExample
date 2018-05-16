@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask,render_template,flash,redirect,url_for,session,logging,request
-from flask_mysqldb import MySQL
+import pymysql.cursors
 from passlib.hash import sha256_crypt
 from forms import RegisterForm
 
@@ -13,12 +13,14 @@ app.config.update(dict(
 ))
 
 # mysql config
-app.config["MYSQL_HOST"] = "localhost"
-app.config["MYSQL_USER"] = "root"
-app.config["MYSQL_PASS"] = ""
-app.config["MYSQL_DB"] = "flask_blog"
-app.config["MYSQL_CURSORCLASS"] = "DictCursor"
-mysql = MySQL(app)
+connection = pymysql.connect(
+    host='localhost',
+    user='root',
+    password='Muh4mm3t',
+    db='flask_blog',
+    charset='utf8mb4',
+    cursorclass=pymysql.cursors.DictCursor
+)
 
 @app.route("/")
 def index():
@@ -38,20 +40,31 @@ def register():
         email = form.email.data
         password = sha256_crypt.encrypt(form.password.data)
 
-        cursor = mysql.connection.cursor()
-        sorgu = "INSERT into users(name,username,email,password) VALUES(%s, %s, %s, %s)" % (name,username,email,password)
-        cursor.execute(sorgu)
-        mysql.connection.commit()
-        cursor.close()
+        print ("name: %s, username: %s, email: %s, password: %s" % (name,username,email,password))
+        
+        try:
+            with connection.cursor() as cursor:
+                # user registiration
+                sql1 = "INSERT into users(name,username,email,password) VALUES(%s, %s, %s, %s)" 
+                cursor.execute(sql1, (name,username,email,password))
+                connection.commit()
 
-        return redirect(url_for("index"))
+            with connection.cursor() as cursor:
+                # Read a single record for example
+                sql2 = "SELECT id, password FROM users WHERE username=%s"
+                cursor.execute(sql2, (username,))
+                result = cursor.fetchone()
+                print(result)
+        finally:
+            connection.close()
+        
+        #return redirect(url_for("index"))
     
     return render_template("register.html", form=form)
 
 @app.route("/article/<string:id>")
 def articleDetail(id):
     return "Article id: " + id
-
 
 
 

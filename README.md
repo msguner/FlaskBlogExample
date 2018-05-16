@@ -2,7 +2,7 @@
 
 **- Installed modules :**
  - Flask
- - flask-mysql
+ - PyMySQL
  - Flask-WTF
  - passlib
  - requests
