@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask,render_template,flash,redirect,url_for,session,logging,request
+from flask_mysqldb import MySQL
 from passlib.hash import sha256_crypt
 from forms import RegisterForm
-import myconnutils
 
 app = Flask(__name__)
 
@@ -11,6 +11,14 @@ app.config.update(dict(
     SECRET_KEY="powerful secretkey",
     WTF_CSRF_SECRET_KEY="a csrf secret key"
 ))
+
+# mysql config
+app.config["MYSQL_HOST"] = "localhost"
+app.config["MYSQL_USER"] = "root"
+app.config["MYSQL_PASS"] = "Muh4mm3t"
+app.config["MYSQL_DB"] = "flask_blog"
+app.config["MYSQL_CURSORCLASS"] = "DictCursor"
+mysql = MySQL(app)
 
 @app.route("/")
 def index():
@@ -30,31 +38,20 @@ def register():
         email = form.email.data
         password = sha256_crypt.encrypt(form.password.data)
 
-        print ("name: %s, username: %s, email: %s, password: %s" % (name,username,email,password))
-        
-        try:
-            with myconnutils.DBase() as db:
-                # user registiration
-                sql1 = "INSERT into users(name,username,email,password) VALUES(%s, %s, %s, %s)" 
-                db.query(sql1, (name,username,email,password))
-                db.conn.commit()
+        cursor = mysql.connection.cursor()
+        sorgu = "INSERT into users(name,username,email,password) VALUES(%s, %s, %s, %s)" % (name,username,email,password)
+        cursor.execute(sorgu)
+        mysql.connection.commit()
+        cursor.close()
 
-            with myconnutils.DBase() as db:
-                # Read a single record for example
-                sql2 = "SELECT id, password FROM users WHERE username=%s"
-                cursor.execute(sql2, (username,))
-                result = cursor.fetchone()
-                print(result)
-        finally:
-            connection.close()
-            flash("Kayıt işlemi başarıyla gerçekleştirildi.", "success")
-            return redirect(url_for("index"))
+        return redirect(url_for("index"))
     
     return render_template("register.html", form=form)
 
 @app.route("/article/<string:id>")
 def articleDetail(id):
     return "Article id: " + id
+
 
 
 
