@@ -35,21 +35,15 @@ def register():
         try:
             with myconnutils.DBase() as db:
                 # user registiration
-                sql1 = "INSERT into users(name,username,email,password) VALUES(%s, %s, %s, %s)" 
+                sql1 = "INSERT into use(name,username,email,password) VALUES(%s, %s, %s, %s)" 
                 db.query(sql1, (name,username,email,password))
                 db.conn.commit()
 
-            with myconnutils.DBase() as db:
-                # Read a single record for example
-                sql2 = "SELECT id, password FROM users WHERE username=%s"
-                cursor.execute(sql2, (username,))
-                result = cursor.fetchone()
-                print(result)
-        finally:
-            connection.close()
-            flash("Kayıt işlemi başarıyla gerçekleştirildi.", "success")
-            return redirect(url_for("index"))
-    
+                flash(u'Kayıt işlemi başarıyla gerçekleştirildi.', 'success')
+                return redirect(url_for("index"))
+        except:
+            flash(u'Kayıt işlemi yapılamadı.', 'danger')
+
     return render_template("register.html", form=form)
 
 @app.route("/article/<string:id>")
